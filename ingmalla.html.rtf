@@ -1,0 +1,185 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 AppleColorEmoji;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\vieww25400\viewh16000\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html lang="es">\
+<head>\
+  <meta charset="UTF-8">\
+  <title>Malla Curricular + P.A.P.A - Ingenier\'eda Qu\'edmica UNAL</title>\
+  <style>\
+    body \{\
+      font-family: Arial, sans-serif;\
+      padding: 20px;\
+    \}\
+    .container \{\
+      position: relative;\
+    \}\
+    svg \{\
+      position: absolute;\
+      top: 0;\
+      left: 0;\
+      pointer-events: none;\
+      z-index: 0;\
+    \}\
+    .semestre-container \{\
+      display: flex;\
+      gap: 16px;\
+      overflow-x: auto;\
+      position: relative;\
+      z-index: 1;\
+    \}\
+    .semestre \{\
+      min-width: 200px;\
+    \}\
+    .semestre h3 \{\
+      text-align: center;\
+      background: #eee;\
+      margin: 0;\
+      padding: 8px 0;\
+    \}\
+    .materia \{\
+      border-radius: 8px;\
+      padding: 6px;\
+      margin: 6px;\
+      color: white;\
+      font-size: 14px;\
+      cursor: pointer;\
+      text-align: center;\
+      opacity: 0.5;\
+      position: relative;\
+    \}\
+    .fundamentacion \{ background-color: #3c78d8; \}\
+    .disciplinar     \{ background-color: #6aa84f; \}\
+    .libre           \{ background-color: #f1c232; color: black; \}\
+    .disponible      \{ opacity: 1; border: 2px solid #333; \}\
+    .aprobada        \{ opacity: 1; border: 2px solid black; background-color: #222 !important; \}\
+\uc0\u8232 \
+    table, th, td \{ border: 1px solid black; border-collapse: collapse; padding: 8px; \}\
+    input[type="number"], input[type="text"] \{ width: 100%; \}\
+    #calculadora \{ margin-top: 50px; \}\
+    .controls \{ margin-top: 10px; \}\
+  </style>\
+</head>\
+<body>\
+  <h1>Malla Curricular - Ingenier\'eda Qu\'edmica UNAL</h1>\
+  <div class="container">\
+    <svg id="lineas"></svg>\
+    <div class="semestre-container" id="malla"></div>\
+  </div>\
+\uc0\u8232 \
+  <div class="controls">\
+    <button onclick="reiniciarTodo()">
+\f1 \uc0\u55357 \u56577 
+\f0  Reiniciar Todo</button>\
+    <button onclick="exportarProgreso()">
+\f1 \uc0\u55357 \u56510 
+\f0  Exportar Progreso</button>\
+    <input type="file" onchange="importarProgreso(event)">\
+  </div>\
+\uc0\u8232 \
+  <div id="calculadora">\
+    <h2>Calculadora de P.A.P.A</h2>\
+    <table id="tablaPapa">\
+      <tr><th>Asignatura</th><th>Cr\'e9ditos</th><th>Nota</th><th>Eliminar</th></tr>\
+    </table>\
+    <button onclick="agregarFilaPAPA()">
+\f1 \uc0\u10133 
+\f0  A\'f1adir materia</button>\
+    <button onclick="calcularPAPA()">
+\f1 \uc0\u55357 \u56522 
+\f0  Calcular P.A.P.A</button>\
+    <h3>P.A.P.A: <span id="resultadoPapa">-</span></h3>\
+  </div>\
+\uc0\u8232 \
+  <script>\
+    const materias = [\
+      \{ codigo: "1000001", nombre: "C\'e1lculo Diferencial", componente: "fundamentacion", prerrequisitos: [] \},\
+      \{ codigo: "1000008", nombre: "Geometr\'eda Vectorial y Anal\'edtica", componente: "fundamentacion", prerrequisitos: [] \},\
+      \{ codigo: "3008111", nombre: "Introducci\'f3n a la Ingenier\'eda Qu\'edmica", componente: "disciplinar", prerrequisitos: [] \},\
+      \{ codigo: "3008252", nombre: "Qu\'edmica General", componente: "fundamentacion", prerrequisitos: [] \},\
+      \{ codigo: "libre1", nombre: "Libre Elecci\'f3n I", componente: "libre", prerrequisitos: [] \},\
+      \{ codigo: "1000005", nombre: "C\'e1lculo Integral", componente: "fundamentacion", prerrequisitos: ["1000001"] \},\
+      \{ codigo: "1000004", nombre: "\'c1lgebra Lineal", componente: "fundamentacion", prerrequisitos: [] \},\
+      \{ codigo: "1000010", nombre: "F\'edsica Mec\'e1nica", componente: "fundamentacion", prerrequisitos: [] \},\
+      \{ codigo: "3008254", nombre: "Qu\'edmica Org\'e1nica", componente: "fundamentacion", prerrequisitos: ["3008252"] \},\
+      \{ codigo: "3008108", nombre: "Optativa de Qu\'edmica", componente: "disciplinar", prerrequisitos: ["3008252"] \},\
+      \{ codigo: "1000006", nombre: "C\'e1lculo en Varias Variables", componente: "fundamentacion", prerrequisitos: ["1000005"] \},\
+      \{ codigo: "1000007", nombre: "Ecuaciones Diferenciales", componente: "fundamentacion", prerrequisitos: ["1000005"] \},\
+      \{ codigo: "3008278", nombre: "Termodin\'e1mica General", componente: "disciplinar", prerrequisitos: ["1000010"] \},\
+      \{ codigo: "3008148", nombre: "Fundamentos de Proyectos de Ingenier\'eda", componente: "disciplinar", prerrequisitos: [] \},\
+    ];\
+  </script>\
+  <script>\
+    function agregarFilaPAPA() \{\
+      const tabla = document.getElementById("tablaPapa");\
+      const fila = document.createElement("tr");\
+      fila.innerHTML = `\
+        <td><input type="text" placeholder="Nombre"></td>\
+        <td><input type="number" step="1" min="0"></td>\
+        <td><input type="number" step="0.1" min="0" max="5"></td>\
+        <td><button onclick="this.parentElement.parentElement.remove()">
+\f1 \uc0\u10060 
+\f0 </button></td>\
+      `;\
+      tabla.appendChild(fila);\
+    \}\
+\uc0\u8232 \
+    function calcularPAPA() \{\
+      const filas = document.querySelectorAll("#tablaPapa tr");\
+      let sumaNotasPorCreditos = 0;\
+      let totalCreditos = 0;\
+      filas.forEach((fila, i) => \{\
+        if (i === 0) return;\
+        const celdas = fila.querySelectorAll("input");\
+        const creditos = parseFloat(celdas[1].value);\
+        const nota = parseFloat(celdas[2].value);\
+        if (!isNaN(creditos) && !isNaN(nota)) \{\
+          sumaNotasPorCreditos += creditos * nota;\
+          totalCreditos += creditos;\
+        \}\
+      \});\
+      const papa = totalCreditos > 0 ? (sumaNotasPorCreditos / totalCreditos).toFixed(2) : "-";\
+      document.getElementById("resultadoPapa").textContent = papa;\
+    \}\
+\uc0\u8232 \
+    function reiniciarTodo() \{\
+      localStorage.clear();\
+      location.reload();\
+    \}\
+\uc0\u8232 \
+    function exportarProgreso() \{\
+      const data = \{\
+        papa: document.getElementById("tablaPapa").innerHTML,\
+      \};\
+      const blob = new Blob([JSON.stringify(data)], \{ type: "application/json" \});\
+      const url = URL.createObjectURL(blob);\
+      const a = document.createElement("a");\
+      a.href = url;\
+      a.download = "progreso_iqu_papa.json";\
+      a.click();\
+      URL.revokeObjectURL(url);\
+    \}\
+\uc0\u8232 \
+    function importarProgreso(event) \{\
+      const archivo = event.target.files[0];\
+      if (!archivo) return;\
+      const reader = new FileReader();\
+      reader.onload = function(e) \{\
+        const data = JSON.parse(e.target.result);\
+        document.getElementById("tablaPapa").innerHTML = data.papa;\
+        document.querySelectorAll('#tablaPapa button').forEach(btn => \{\
+          btn.onclick = function() \{\
+            this.parentElement.parentElement.remove();\
+          \}\
+        \});\
+      \};\
+      reader.readAsText(archivo);\
+    \}\
+  </script>\
+</body>\
+</html>\
+}
