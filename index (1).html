@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Malla y Calculadora P.A.P.A. - Ing. Química UNAL</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    nav { background: #004080; color: white; display: flex; justify-content: space-around; padding: 1rem; }
+    nav button { background: white; color: #004080; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    .section { display: none; padding: 2rem; }
+    .active { display: block; }
+    .column-grid { display: flex; overflow-x: auto; gap: 1rem; }
+    .semester-column { flex: 0 0 250px; background: #fff; padding: 1rem; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.1); min-height: 300px; }
+    .semester-column h3 { text-align: center; margin-top: 0; }
+    .card { background: #f9f9f9; margin-bottom: 1rem; padding: 0.5rem; border-radius: 6px; box-shadow: 0 0 2px rgba(0,0,0,0.1); font-size: 0.9rem; cursor: pointer; }
+    .card.locked { background: #eee; color: #aaa; pointer-events: none; }
+    .completed { background: #c8facc !important; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.5rem; border: 1px solid #ccc; text-align: center; }
+    input[type='number'], input[type='text'] { width: 90%; }
+    .controls { margin-top: 1rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <nav>
+    <button onclick="switchSection('malla')">📚 Malla Curricular</button>
+    <button onclick="switchSection('papa')">🧮 Calculadora P.A.P.A.</button>
+  </nav>
+
+  <div id="malla" class="section active">
+    <h2>Malla Curricular</h2>
+    <div class="column-grid" id="mallaContainer"></div>
+  </div>
+
+  <div id="papa" class="section">
+    <h2>Calculadora de P.A.P.A.</h2>
+    <table id="papaTable">
+      <thead>
+        <tr><th>Materia</th><th>Créditos</th><th>Notas</th><th>Acciones</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="controls">
+      <button onclick="addRow()">➕ Añadir materia</button>
+      <button onclick="exportPapa()">⬇️ Exportar</button>
+      <input type="file" onchange="importPapa(event)" />
+      <button onclick="resetPapa()">🔁 Reiniciar</button>
+      <h3 id="papaResult">P.A.P.A.: 0.00</h3>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
